@@ -75,15 +75,45 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val crashFile = File(filesDir, "crash.txt")
-        val crashText = if (crashFile.exists()) crashFile.readText() else null
-        crashFile.delete()
+        if (crashFile.exists()) {
+            showCrash(crashFile)
+            return
+        }
         setContent {
             MaterialTheme(colorScheme = darkColorScheme(background = C.bg, surface = C.surface, primary = C.teal)) {
-                var report by remember { mutableStateOf(crashText) }
-                val r = report
-                if (r != null) CrashScreen(r) { report = null } else CleanerApp()
+                CleanerApp()
             }
         }
+    }
+
+    /** Plain Android views, no Compose, so the report still shows if Compose itself is what crashed. */
+    private fun showCrash(file: File) {
+        val text = runCatching { file.readText() }.getOrDefault("(unreadable)")
+        val pad = (16 * resources.displayMetrics.density).toInt()
+        val col = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setPadding(pad, pad, pad, pad)
+            setBackgroundColor(0xFF0B0D12.toInt())
+        }
+        fun label(t: String, size: Float, color: Int) = android.widget.TextView(this).apply {
+            this.text = t
+            textSize = size
+            setTextColor(color)
+        }
+        col.addView(label("Cleaner crashed last time", 22f, 0xFFE8EAF0.toInt()))
+        col.addView(android.widget.Button(this).apply {
+            this.text = "Copy report"
+            setOnClickListener {
+                val cm = getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                cm.setPrimaryClip(android.content.ClipData.newPlainText("crash", text))
+            }
+        })
+        col.addView(android.widget.Button(this).apply {
+            this.text = "Continue"
+            setOnClickListener { file.delete(); recreate() }
+        })
+        col.addView(label(text, 10f, 0xFF9AA3B5.toInt()).apply { setTextIsSelectable(true) })
+        setContentView(android.widget.ScrollView(this).apply { addView(col) })
     }
 }
 
