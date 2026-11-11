@@ -36,8 +36,9 @@ class CleanerVM(app: Application) : AndroidViewModel(app) {
     }
 
     fun refreshTrash() {
+        val days = trashDays // read UI state on the main thread, never inside the IO block
         viewModelScope.launch {
-            trashInfo = withContext(Dispatchers.IO) { trash.purge(trashDays); trash.info() }
+            trashInfo = withContext(Dispatchers.IO) { trash.purge(days); trash.info() }
         }
     }
 
@@ -62,10 +63,11 @@ class CleanerVM(app: Application) : AndroidViewModel(app) {
     fun scan() {
         if (scanning) return
         scanning = true
+        val keep = keepOldest // read UI state on the main thread
         viewModelScope.launch {
             try {
                 status = "Scanning for duplicates..."
-                val g = withContext(Dispatchers.IO) { findDuplicates(keepOldest) }
+                val g = withContext(Dispatchers.IO) { findDuplicates(keep) }
                 groups = g
                 removeSet = g.flatMap { it.items.drop(1) }.map { it.path }.toSet()
                 status = "Scanning for junk..."
