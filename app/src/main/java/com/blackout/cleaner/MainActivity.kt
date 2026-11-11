@@ -356,8 +356,8 @@ private fun SettingsScreen(vm: CleanerVM) {
             Text("Which copy stays when files are identical", color = C.muted, fontSize = 12.sp)
             Spacer(Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Chip("Oldest", vm.keepOldest) { vm.setKeepOldest(true) }
-                Chip("Newest", !vm.keepOldest) { vm.setKeepOldest(false) }
+                Chip("Oldest", vm.keepOldest) { vm.updateKeepOldest(true) }
+                Chip("Newest", !vm.keepOldest) { vm.updateKeepOldest(false) }
             }
         }
         Panel {
@@ -365,7 +365,7 @@ private fun SettingsScreen(vm: CleanerVM) {
             Text("Deleted items stay recoverable this long", color = C.muted, fontSize = 12.sp)
             Spacer(Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf(7, 14, 30).forEach { d -> Chip("$d days", vm.trashDays == d) { vm.setTrashDays(d) } }
+                listOf(7, 14, 30).forEach { d -> Chip("$d days", vm.trashDays == d) { vm.updateTrashDays(d) } }
             }
             Spacer(Modifier.height(12.dp))
             Text("In trash: ${vm.trashInfo.first} files - ${fmtSize(vm.trashInfo.second)}", color = C.muted, fontSize = 13.sp)

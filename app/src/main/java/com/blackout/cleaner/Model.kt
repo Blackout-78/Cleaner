@@ -41,14 +41,14 @@ class CleanerVM(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun setKeepOldest(v: Boolean) {
+    fun updateKeepOldest(v: Boolean) {
         keepOldest = v
         prefs.edit().putBoolean("keepOldest", v).apply()
         groups = groups.map { DupGroup(rank(it.items.map { i -> i.file }, v)) }
         removeSet = groups.flatMap { it.items.drop(1) }.map { it.path }.toSet()
     }
 
-    fun setTrashDays(d: Int) {
+    fun updateTrashDays(d: Int) {
         trashDays = d
         prefs.edit().putInt("trashDays", d).apply()
         refreshTrash()
