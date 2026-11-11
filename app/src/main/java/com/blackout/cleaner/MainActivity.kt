@@ -311,7 +311,7 @@ private fun DupRow(item: Item, removed: Boolean, onToggle: () -> Unit) {
         Box(
             Modifier.size(44.dp).clip(RoundedCornerShape(10.dp)).background(C.line),
             contentAlignment = Alignment.Center
-        ) { Icon(Icons.Outlined.ContentCopy, contentDescription = null, tint = C.muted) }
+        ) { Thumb(item.file) { Icon(Icons.Outlined.ContentCopy, contentDescription = null, tint = C.muted) } }
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text(item.file.name, color = C.text, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
