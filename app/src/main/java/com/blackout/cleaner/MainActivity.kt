@@ -31,6 +31,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ContentCopy
@@ -57,8 +58,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -66,15 +69,33 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
+import java.io.File
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val crashFile = File(filesDir, "crash.txt")
+        val crashText = if (crashFile.exists()) crashFile.readText() else null
+        crashFile.delete()
         setContent {
             MaterialTheme(colorScheme = darkColorScheme(background = C.bg, surface = C.surface, primary = C.teal)) {
-                CleanerApp()
+                var report by remember { mutableStateOf(crashText) }
+                val r = report
+                if (r != null) CrashScreen(r) { report = null } else CleanerApp()
             }
         }
+    }
+}
+
+@Composable
+private fun CrashScreen(text: String, onContinue: () -> Unit) {
+    val clip = LocalClipboardManager.current
+    Column(Modifier.fillMaxSize().background(C.bg).verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text("Cleaner crashed last time", color = C.text, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Text("Tap Copy, then paste it to Claude.", color = C.muted, fontSize = 13.sp)
+        BigButton("Copy report", C.amber, Color(0xFF2A1D00), true) { clip.setText(AnnotatedString(text)) }
+        BigButton("Continue", C.teal, Color(0xFF06201C), true, onContinue)
+        SelectionContainer { Text(text, color = C.muted, fontSize = 10.sp) }
     }
 }
 
