@@ -79,6 +79,7 @@ class MainActivity : ComponentActivity() {
             showCrash(crashFile)
             return
         }
+        C.load(getSharedPreferences("cleaner", MODE_PRIVATE))
         setContent {
             MaterialTheme(colorScheme = darkColorScheme(background = C.bg, surface = C.surface, primary = C.teal)) {
                 CleanerApp()
@@ -129,11 +130,13 @@ private fun CrashScreen(text: String, onContinue: () -> Unit) {
     }
 }
 
-private enum class Tab(val label: String, val icon: ImageVector, val color: Color) {
-    Home("Home", Icons.Outlined.Home, C.teal),
-    Duplicates("Duplicates", Icons.Outlined.ContentCopy, C.amber),
-    Junk("Junk", Icons.Outlined.DeleteOutline, C.blue),
-    Settings("Settings", Icons.Outlined.SettingsIcon, C.violet)
+private enum class Tab(val label: String, val icon: ImageVector, val key: String) {
+    Home("Home", Icons.Outlined.Home, "teal"),
+    Duplicates("Duplicates", Icons.Outlined.ContentCopy, "amber"),
+    Junk("Junk", Icons.Outlined.DeleteOutline, "blue"),
+    Settings("Settings", Icons.Outlined.SettingsIcon, "violet");
+
+    val color: Color get() = C.get(key)
 }
 
 @Composable
@@ -228,7 +231,7 @@ private fun BigButton(text: String, bg: Color, fg: Color, enabled: Boolean, onCl
         enabled = enabled,
         shape = RoundedCornerShape(16.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = bg, contentColor = fg,
+            containerColor = bg, contentColor = C.on(bg),
             disabledContainerColor = C.surface, disabledContentColor = C.muted
         ),
         modifier = Modifier.fillMaxWidth().height(54.dp)
@@ -243,7 +246,7 @@ private fun Chip(label: String, selected: Boolean, onClick: () -> Unit) {
             .clickable(onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 10.dp)
     ) {
-        Text(label, color = if (selected) Color(0xFF1B1033) else C.text, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+        Text(label, color = if (selected) C.on(C.violet) else C.text, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
     }
 }
 
@@ -424,6 +427,28 @@ private fun SettingsScreen(vm: CleanerVM) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Chip("Restore all", false) { vm.restoreTrash() }
                 Chip("Empty trash", false) { vm.emptyTrash() }
+            }
+        }
+        Panel {
+            Text("Colors", color = C.text, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+            Text("Tap a color to change it with the color wheel", color = C.muted, fontSize = 12.sp)
+            Spacer(Modifier.height(10.dp))
+            val cprefs = LocalContext.current.getSharedPreferences("cleaner", android.content.Context.MODE_PRIVATE)
+            var editing by remember { mutableStateOf<String?>(null) }
+            listOf("teal" to "Home and scan", "amber" to "Duplicates", "blue" to "Junk", "violet" to "Settings and Deep Clean").forEach { (k, label) ->
+                Row(
+                    Modifier.fillMaxWidth().clickable { editing = k }.padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(Modifier.size(28.dp).clip(RoundedCornerShape(14.dp)).background(C.get(k)).border(2.dp, C.line, RoundedCornerShape(14.dp)))
+                    Spacer(Modifier.width(12.dp))
+                    Text(label, color = C.text, fontSize = 14.sp)
+                }
+            }
+            Spacer(Modifier.height(6.dp))
+            Chip("Reset colors", false) { C.reset(cprefs) }
+            editing?.let { k ->
+                ColorPickerDialog("Pick a color", C.get(k), { c -> C.set(k, c, cprefs); editing = null }, { editing = null })
             }
         }
         Panel(border = C.violet.copy(alpha = 0.35f)) {
