@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -32,9 +34,16 @@ jobs:
         with:
           name: Cleaner-APK
           path: Cleaner.apk
+      - name: Write what's new
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bash .github/release-notes.sh '^(build-|v[0-9])' . > release-body.md
+
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: build-${{ github.run_number }}
-          name: Cleaner build ${{ github.run_number }}
+          tag_name: v0.1.${{ github.run_number }}
+          name: Cleaner 0.1.${{ github.run_number }}
+          body_path: release-body.md
           files: Cleaner.apk
