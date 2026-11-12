@@ -167,8 +167,13 @@ fun CleanerApp() {
                 Tab.Settings -> SettingsScreen(vm)
             }
         }
+        Text(
+            Version.tag, color = C.muted, fontSize = 10.sp,
+            modifier = Modifier.fillMaxWidth().background(C.bar).padding(start = 12.dp, top = 4.dp)
+                .clickable { tabIndex = tabs.indexOf(Tab.Settings) }
+        )
         Row(
-            Modifier.fillMaxWidth().background(C.bar).padding(top = 8.dp, bottom = 8.dp),
+            Modifier.fillMaxWidth().background(C.bar).padding(top = 4.dp, bottom = 8.dp),
             horizontalArrangement = Arrangement.SpaceAround
         ) {
             tabs.forEachIndexed { i, t ->
@@ -464,6 +469,7 @@ private fun SettingsScreen(vm: CleanerVM) {
             )
         }
         if (vm.status.isNotEmpty()) Text(vm.status, color = C.muted, fontSize = 13.sp)
+        Text(Version.full, color = C.muted, fontSize = 12.sp)
     }
 }
 
