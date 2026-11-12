@@ -34,6 +34,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Home
@@ -80,6 +81,7 @@ class MainActivity : ComponentActivity() {
             return
         }
         C.load(getSharedPreferences("cleaner", MODE_PRIVATE))
+        Deep.init(applicationContext)
         setContent {
             MaterialTheme(colorScheme = darkColorScheme(background = C.bg, surface = C.surface, primary = C.teal)) {
                 CleanerApp()
@@ -134,6 +136,7 @@ private enum class Tab(val label: String, val icon: ImageVector, val key: String
     Home("Home", Icons.Outlined.Home, "teal"),
     Duplicates("Duplicates", Icons.Outlined.ContentCopy, "amber"),
     Junk("Junk", Icons.Outlined.DeleteOutline, "blue"),
+    Deep("Deep", Icons.Outlined.Bolt, "violet"),
     Settings("Settings", Icons.Outlined.SettingsIcon, "violet");
 
     val color: Color get() = C.get(key)
@@ -160,6 +163,7 @@ fun CleanerApp() {
                 Tab.Home -> HomeScreen(vm) { tabIndex = it }
                 Tab.Duplicates -> DuplicatesScreen(vm)
                 Tab.Junk -> JunkScreen(vm)
+                Tab.Deep -> DeepScreen()
                 Tab.Settings -> SettingsScreen(vm)
             }
         }
@@ -301,7 +305,7 @@ private fun HomeScreen(vm: CleanerVM, go: (Int) -> Unit) {
             if (vm.scanned) "${fmtSize(vm.junkBytes())} selected to clear" else "Run a scan"
         ) { go(2) }
         Spacer(Modifier.height(10.dp))
-        CardRow(C.violet, Icons.Outlined.SettingsIcon, "Deep Clean", "Coming in the next build") { go(3) }
+        CardRow(C.violet, Icons.Outlined.Bolt, "Deep Clean", "Clear every app's cache with Shizuku") { go(3) }
     }
 }
 
@@ -452,13 +456,52 @@ private fun SettingsScreen(vm: CleanerVM) {
             }
         }
         Panel(border = C.violet.copy(alpha = 0.35f)) {
-            Text("Deep Clean (wireless debugging)", color = C.violet, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+            Text("Deep Clean", color = C.violet, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(6.dp))
             Text(
-                "Coming in the next build: one-time pairing, then it reconnects on its own and trims app caches.",
+                "Uses the Shizuku app (open source, not Google). Open the Deep tab to set it up.",
                 color = C.muted, fontSize = 12.sp
             )
         }
         if (vm.status.isNotEmpty()) Text(vm.status, color = C.muted, fontSize = 13.sp)
+    }
+}
+
+@Composable
+private fun DeepScreen() {
+    val ctx = LocalContext.current
+    DisposableEffect(Unit) { Deep.refresh(ctx); onDispose { } }
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Header("Deep Clean", "Clears the cache of every app. Nothing else is touched.")
+        val (title, steps) = when (Deep.state) {
+            "ready" -> "Ready" to ""
+            "needs_permission" -> "Shizuku is running" to "Tap Allow so Cleaner may use it."
+            "denied" -> "Permission was refused" to "Open Shizuku > Authorized apps and switch Cleaner on."
+            "stopped" -> "Shizuku is installed but not running" to
+                "1. Settings > Developer options > Wireless debugging: turn on (Wi-Fi must be connected).\n" +
+                "2. Open Shizuku and tap Pairing, then enter the pairing code from the notification.\n" +
+                "3. In Shizuku tap Start.\n" +
+                "4. Come back here."
+            else -> "Shizuku is not installed" to
+                "1. On your PC or phone browser, download the Shizuku APK from shizuku.rikka.app/download (the GitHub release, not the Play Store).\n" +
+                "2. Install it.\n" +
+                "3. Come back here."
+        }
+        Panel(border = C.violet.copy(alpha = 0.35f)) {
+            Text(title, color = C.violet, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+            if (steps.isNotEmpty()) {
+                Spacer(Modifier.height(6.dp))
+                Text(steps, color = C.muted, fontSize = 13.sp)
+            }
+            Spacer(Modifier.height(12.dp))
+            when (Deep.state) {
+                "ready" -> BigButton(if (Deep.busy) "Working..." else "Run Deep Clean", C.violet, Color.Black, !Deep.busy) { Deep.run(ctx) }
+                "needs_permission" -> BigButton("Allow", C.violet, Color.Black, true) { Deep.requestPermission() }
+                "stopped", "denied" -> BigButton("Open Shizuku", C.violet, Color.Black, Deep.installed(ctx)) { Deep.openShizuku(ctx) }
+                else -> {}
+            }
+        }
+        if (Deep.result.isNotEmpty()) Text(Deep.result, color = C.text, fontSize = 14.sp)
+        Text("Cleaner never connects to the internet. It talks to Shizuku on this phone only.", color = C.muted, fontSize = 12.sp)
     }
 }
