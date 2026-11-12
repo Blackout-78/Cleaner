@@ -2,7 +2,7 @@ package com.blackout.cleaner
 
 import android.content.ComponentName
 import android.content.Context
-import android.content.IBinder
+import android.os.IBinder
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.Environment
