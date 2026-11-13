@@ -10,16 +10,16 @@ import androidx.compose.ui.graphics.toArgb
 
 /** Night palette, same look as the other Blackout apps. The four accent colors can be changed in Settings. */
 object C {
-    val bg = Color(0xFF0B0D12)
-    val surface = Color(0xFF151922)
-    val bar = Color(0xFF11141B)
-    val line = Color(0xFF1E2330)
+    val bg = Color(0xFF000000)
+    val surface = Color(0xFF111111)
+    val bar = Color(0xFF111111)
+    val line = Color(0xFF3A3A3A)
     val text = Color(0xFFE8EAF0)
     val muted = Color(0xFF9AA3B5)
     val red = Color(0xFFFCA5A5)
 
     val defaults = mapOf(
-        "teal" to Color(0xFF2DD4BF),
+        "teal" to Color(0xFF23295D),
         "amber" to Color(0xFFFBBF24),
         "blue" to Color(0xFF60A5FA),
         "violet" to Color(0xFFA78BFA)
@@ -62,6 +62,9 @@ object C {
         e.apply()
     }
 
+    /** Lighter version of an accent, for text on black. */
+    fun ink(c: Color): Color = androidx.compose.ui.graphics.lerp(c, Color.White, 0.6f)
+
     /** Readable text color to put on top of a given accent color. */
-    fun on(c: Color): Color = if (c.luminance() > 0.45f) Color(0xFF0B0D12) else Color(0xFFFFFFFF)
+    fun on(c: Color): Color = if (c.luminance() > 0.45f) Color(0xFF000000) else Color(0xFFFFFFFF)
 }

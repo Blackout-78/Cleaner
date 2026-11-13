@@ -119,7 +119,7 @@ fun ColorPickerDialog(title: String, initial: Color, onPick: (Color) -> Unit, on
                 }
             }
         },
-        confirmButton = { TextButton(onClick = { onPick(color) }) { Text("Use this color", color = C.teal) } },
+        confirmButton = { TextButton(onClick = { onPick(color) }) { Text("Use this color", color = C.ink(C.teal)) } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel", color = C.muted) } }
     )
 }

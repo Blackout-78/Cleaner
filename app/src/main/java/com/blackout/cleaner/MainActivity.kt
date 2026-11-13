@@ -127,7 +127,7 @@ private fun CrashScreen(text: String, onContinue: () -> Unit) {
         Text("Cleaner crashed last time", color = C.text, fontSize = 22.sp, fontWeight = FontWeight.Bold)
         Text("Tap Copy, then paste it to Claude.", color = C.muted, fontSize = 13.sp)
         BigButton("Copy report", C.amber, Color(0xFF2A1D00), true) { clip.setText(AnnotatedString(text)) }
-        BigButton("Continue", C.teal, Color(0xFF06201C), true, onContinue)
+        BigButton("Continue", C.teal, Color.White, true, onContinue)
         SelectionContainer { Text(text, color = C.muted, fontSize = 10.sp) }
     }
 }
@@ -205,7 +205,7 @@ private fun AccessScreen(onChanged: () -> Unit) {
             color = C.muted, fontSize = 14.sp
         )
         Spacer(Modifier.height(24.dp))
-        BigButton("Allow access", C.teal, Color(0xFF06201C), true) {
+        BigButton("Allow access", C.teal, Color.White, true) {
             if (Build.VERSION.SDK_INT >= 30) {
                 ctx.startActivity(
                     Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:${ctx.packageName}"))
@@ -294,7 +294,7 @@ private fun HomeScreen(vm: CleanerVM, go: (Int) -> Unit) {
             }
         }
         Spacer(Modifier.height(16.dp))
-        BigButton(if (vm.scanning) "Scanning..." else "Scan now", C.teal, Color(0xFF06201C), !vm.scanning) { vm.scan() }
+        BigButton(if (vm.scanning) "Scanning..." else "Scan now", C.teal, Color.White, !vm.scanning) { vm.scan() }
         if (vm.status.isNotEmpty()) {
             Spacer(Modifier.height(8.dp))
             Text(vm.status, color = C.muted, fontSize = 13.sp)
@@ -330,7 +330,7 @@ private fun DupRow(item: Item, removed: Boolean, onToggle: () -> Unit) {
             Text("${shortPath(item.file)} - ${fmtDate(item.date)} - ${fmtSize(item.size)}", color = C.muted, fontSize = 11.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
         Spacer(Modifier.width(8.dp))
-        Text(if (removed) "REMOVE" else "KEEP", color = if (removed) C.red else C.teal, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+        Text(if (removed) "REMOVE" else "KEEP", color = if (removed) C.red else C.ink(C.teal), fontSize = 11.sp, fontWeight = FontWeight.Bold)
     }
 }
 
