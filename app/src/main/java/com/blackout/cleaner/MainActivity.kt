@@ -469,6 +469,8 @@ private fun SettingsScreen(vm: CleanerVM) {
             )
         }
         if (vm.status.isNotEmpty()) Text(vm.status, color = C.muted, fontSize = 13.sp)
+        val relCtx = androidx.compose.ui.platform.LocalContext.current
+        Chip("Open GitHub Releases", false) { Version.openReleases(relCtx) }
         Text(Version.full, color = C.muted, fontSize = 12.sp)
     }
 }
