@@ -4,9 +4,9 @@ package com.blackout.cleaner
 class ShellService : IUserService.Stub() {
     override fun destroy() { System.exit(0) }
 
-    override fun exec(command: String): String {
+    override fun trimCaches(): String {
         return try {
-            val p = ProcessBuilder("sh", "-c", command).redirectErrorStream(true).start()
+            val p = ProcessBuilder("pm", "trim-caches", "1000000000000").redirectErrorStream(true).start()
             val out = p.inputStream.bufferedReader().readText()
             val code = p.waitFor()
             "$out\n[exit $code]".trim()

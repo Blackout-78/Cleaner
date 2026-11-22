@@ -81,7 +81,7 @@ object Deep {
             override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
                 val svc = IUserService.Stub.asInterface(binder)
                 Thread {
-                    val out = try { svc.exec("pm trim-caches 1000000000000") } catch (e: Throwable) { "[error ${e.message}]" }
+                    val out = try { svc.trimCaches() } catch (e: Throwable) { "[error ${e.message}]" }
                     val freed = freeBytes() - before
                     main.post {
                         result = "Done. Freed ${fmtSize(if (freed > 0) freed else 0)}.\n" +

@@ -34,6 +34,8 @@ android {
             isMinifyEnabled = false
             if (System.getenv("KEYSTORE_PATH") != null) {
                 signingConfig = signingConfigs.getByName("release")
+            } else if (System.getenv("CI") == "true") {
+                throw GradleException("KEYSTORE_PATH is missing in CI: refusing to build a release with the debug key.")
             }
         }
     }

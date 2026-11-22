@@ -204,9 +204,28 @@ class Trash(private val ctx: Context) {
         if (!index.exists()) return emptyList()
         return index.readLines().mapNotNull { line ->
             val p = line.split("\t")
-            if (p.size == 3) TrashEntry(p[0], p[1], p[2].toLongOrNull() ?: 0L) else null
+            if (p.size == 3 && safeName(p[0])) TrashEntry(p[0], p[1], p[2].toLongOrNull() ?: 0L) else null
         }
     }
+
+    /** The index sits on shared storage, so never trust it: names must be plain file names. */
+    private fun safeName(n: String) = n.isNotEmpty() && !n.contains('/') && !n.contains('\\') && !n.contains("..")
+
+    /** Trash file for an entry, only if it really lives directly inside the trash folder. */
+    private fun trashFile(e: TrashEntry): File? {
+        if (!safeName(e.name)) return null
+        val f = File(dir, e.name)
+        return try {
+            if (f.canonicalFile.parentFile == dir.canonicalFile) f else null
+        } catch (_: Exception) { null }
+    }
+
+    /** Original path, only if it resolves inside the storage root. */
+    private fun safeTarget(e: TrashEntry): File? = try {
+        val t = File(e.original).canonicalFile
+        val root = storageRoot().canonicalFile
+        if (t.path.startsWith(root.path + File.separator)) t else null
+    } catch (_: Exception) { null }
 
     private fun writeEntries(list: List<TrashEntry>) {
         dir.mkdirs()
@@ -246,8 +265,8 @@ class Trash(private val ctx: Context) {
         val keep = mutableListOf<TrashEntry>()
         val restored = mutableListOf<String>()
         for (e in entries()) {
-            val src = File(dir, e.name)
-            var target = File(e.original)
+            val src = trashFile(e) ?: continue
+            var target = safeTarget(e) ?: continue
             if (!src.exists()) continue
             target.parentFile?.mkdirs()
             if (target.exists()) target = File(target.parentFile, "restored_" + target.name)
@@ -266,7 +285,7 @@ class Trash(private val ctx: Context) {
         val limit = System.currentTimeMillis() - days * 24L * 3600 * 1000
         val keep = mutableListOf<TrashEntry>()
         for (e in entries()) {
-            if (e.time < limit) File(dir, e.name).delete() else keep.add(e)
+            if (e.time < limit) trashFile(e)?.delete() else keep.add(e)
         }
         if (index.exists()) writeEntries(keep)
     }
