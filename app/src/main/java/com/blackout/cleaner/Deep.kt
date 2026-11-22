@@ -76,7 +76,7 @@ object Deep {
         result = "Working..."
         val before = freeBytes()
         val args = Shizuku.UserServiceArgs(ComponentName(ctx.packageName, ShellService::class.java.name))
-            .processNameSuffix("shell").debuggable(false).daemon(false).version(1)
+            .processNameSuffix("shell").debuggable(false).daemon(false).version(2)
         val conn = object : ServiceConnection {
             override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
                 val svc = IUserService.Stub.asInterface(binder)

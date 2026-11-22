@@ -209,7 +209,8 @@ class Trash(private val ctx: Context) {
     }
 
     /** The index sits on shared storage, so never trust it: names must be plain file names. */
-    private fun safeName(n: String) = n.isNotEmpty() && !n.contains('/') && !n.contains('\\') && !n.contains("..")
+    private fun safeName(n: String) =
+        n.isNotEmpty() && n != "." && n != ".." && !n.contains('/') && !n.contains('\\') && !n.contains('\u0000')
 
     /** Trash file for an entry, only if it really lives directly inside the trash folder. */
     private fun trashFile(e: TrashEntry): File? {
