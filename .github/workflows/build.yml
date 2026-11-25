@@ -15,7 +15,7 @@ jobs:
       - name: Security guard (blocks the build if something dangerous was added)
         run: python3 .github/guard/guard.py
       - name: Check the Gradle wrapper is the official one
-        uses: gradle/actions/wrapper-validation@ed408507eac070d1f99cc633dbcf757c94c7933a  # v4
+        uses: gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c  # v6.4.1
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961  # v5
         with:
           distribution: temurin
